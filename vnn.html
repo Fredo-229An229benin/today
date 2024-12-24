@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateforme de Vote</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5rem;
+            animation: text-glow 0.5s infinite alternate;
+        }
+        @keyframes text-glow {
+  from {
+    text-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px green;
+  }
+  to {
+    text-shadow: 0 0 20px green, 0 0 30px yellow, 0 0 40px yellow;
+  }
+}
+
+        #pageVote {
+            display: block;
+            text-align: center;
+        }
+
+        .candidat {
+            display: inline-block;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .candidat img {
+            width: 100px; /* Taille réduite des images */
+            height: 100px; /* Taille réduite des images */
+            border-radius: 50%; /* Encercle les images */
+            border: 5px solid greenyellow; /* Couleur de la bordure */
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: green;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: red;
+        }
+
+        #footer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF6347;
+        }
+        h1{color: green;}
+    </style>
+</head>
+<body>
+    <div id="pageVote">
+        <h1>VOTEZ POUR LE CANDIDAT DE VOTRE CHOIX</h1>
+        <div id="candidats"></div>
+        <button onclick="afficherResultats()">Voir les Résultats</button>
+    </div>
+
+    <div id="footer">An Prod</div>
+
+    <script>
+        // Liste d'utilisateurs déjà inscrits (si besoin)
+        const utilisateurs = JSON.parse(localStorage.getItem('utilisateurs')) || [];
+
+        const candidats = [
+            { id: 1, nom: 'Frédy', photo: 'f.jpg', votes: 0 },
+            { id: 2, nom: 'Peniel', photo: 'p.jpg', votes: 0 },
+            { id: 3, nom: 'Dinoper', photo: 'd.jpeg', votes: 0 }
+        ];
+
+        let aVoter = false;
+
+        function chargerVotes() {
+            const storedVotes = localStorage.getItem('votes');
+            if (storedVotes) {
+                const votes = JSON.parse(storedVotes);
+                candidats.forEach(candidat => {
+                    const storedVote = votes.find(v => v.id === candidat.id);
+                    if (storedVote) {
+                        candidat.votes = storedVote.votes;
+                    }
+                });
+            }
+        }
+
+        function enregistrerVotes() {
+            localStorage.setItem('votes', JSON.stringify(candidats));
+        }
+
+        // Fonction pour afficher la page de vote
+        function afficherPageDeVote() {
+            chargerVotes();  // Charger les votes enregistrés
+
+            const candidatsContainer = document.getElementById('candidats');
+            candidats.forEach(candidat => {
+                const candidatDiv = document.createElement('div');
+                candidatDiv.classList.add('candidat');
+                candidatDiv.innerHTML = `
+                    <img src="${candidat.photo}" alt="${candidat.nom}">
+                    <h3>${candidat.nom}</h3>
+                    <p>Votes: ${candidat.votes}</p>
+                    <button id="vote${candidat.id}" onclick="voter(${candidat.id})">Voter</button>
+                `;
+                candidatsContainer.appendChild(candidatDiv);
+            });
+        }
+
+        // Fonction pour voter pour un candidat
+        function voter(candidatId) {
+            if (aVoter) {
+                alert('Vous avez déjà voté. Vous ne pouvez voter qu\'une seule fois.');
+                return;
+            }
+
+            const candidat = candidats.find(c => c.id === candidatId);
+            if (candidat) {
+                candidat.votes++;
+                aVoter = true;
+                alert('Vous avez voté pour ' + candidat.nom);
+
+                candidats.forEach(c => {
+                    const button = document.getElementById('vote' + c.id);
+                    button.disabled = true;
+                });
+
+                enregistrerVotes();
+            }
+        }
+
+        // Fonction pour afficher les résultats
+        function afficherResultats() {
+            let resultats = 'Résultats des votes :\n';
+            candidats.forEach(candidat => {
+                resultats += `${candidat.nom} : ${candidat.votes} vote(s)\n`;
+            });
+            alert(resultats);
+        }
+
+        // Afficher directement la page de vote
+        afficherPageDeVote();
+    </script>
+</body>
+</html>
